@@ -1,3 +1,8 @@
+# SSH authorized key management for puppet
+#
+# Copyright (C) 2012 Wunderman PXP GmbH
+# Lukas Hetzenecker <lukas.hetzenecker@wunderman.com>
+
 module Puppet
   newtype(:pxp_ssh_authorized_key_base) do
     @doc = "Manages SSH authorized keys. Currently only type 2 keys are

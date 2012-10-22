@@ -1,3 +1,8 @@
+# SSH authorized key management for puppet
+#
+# Copyright (C) 2012 Wunderman PXP GmbH
+# Lukas Hetzenecker <lukas.hetzenecker@wunderman.com>
+
 define pxp_ssh_authorized_key (
   $key_comment,
   $key_type = 'ssh-rsa',

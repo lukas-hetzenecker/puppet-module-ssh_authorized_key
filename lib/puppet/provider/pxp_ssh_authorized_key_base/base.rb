@@ -1,3 +1,8 @@
+# SSH authorized key management for puppet
+#
+# Copyright (C) 2012 Wunderman PXP GmbH
+# Lukas Hetzenecker <lukas.hetzenecker@wunderman.com>
+
 require 'set'
 require 'pp'
 
