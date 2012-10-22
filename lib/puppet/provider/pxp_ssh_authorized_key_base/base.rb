@@ -4,7 +4,6 @@
 # Lukas Hetzenecker <lukas.hetzenecker@wunderman.com>
 
 require 'set'
-require 'pp'
 
 require 'puppet'
 require 'puppet/type'
