@@ -66,7 +66,8 @@ This requires the manifest/init.pp file that is shipped with this module.
 
 The relevant section is shown here: 
 
-```  pxp_ssh_authorized_key_base {
+```
+pxp_ssh_authorized_key_base {
     $name:
       ensure  => $ensure,
       comment => $key_comment,
