@@ -25,7 +25,7 @@ These shortcomings are:
 
  - The user and target attributes do not accept arrays.
    So it is not possible to have the same SSH key (comment and fingerprint) in multiple files.
-   This is releate to issue (1).
+   This is releated to issue (1).
 
 This module should fix the issues mentioned in Puppet Bug #1531 (http://projects.puppetlabs.com/issues/1531).
 
