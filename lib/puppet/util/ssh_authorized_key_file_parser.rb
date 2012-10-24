@@ -2,6 +2,9 @@
 #
 # Copyright (C) 2012 Wunderman PXP GmbH
 # Lukas Hetzenecker <lukas.hetzenecker@wunderman.com>
+# 
+# The bigger part of this file was copied from Puppet:
+# Copyright (C) 2005-2012 Puppet Labs Inc
 
 require 'puppet'
 #require 'puppet/util'
