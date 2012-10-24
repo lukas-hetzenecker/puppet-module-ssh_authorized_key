@@ -1,30 +1,30 @@
-puppet-module-ssh_authorized_key (SSH authorized key management for puppet)
-===========================================================================
+SSH authorized key management for puppet
+========================================
 
 Copyright
 ---------
 
-Copyright (C) 2012 Wunderman PXP GmbH
+Copyright (C) 2012 Wunderman PXP GmbH  
 Lukas Hetzenecker <lukas.hetzenecker@wunderman.com>
 
 Introduction
 ------------
 
-This module was created because the "ssh_authorized_key" module that is included has some
+This module was created because the "ssh_authorized_key" resource of Puppet has some
 shortcomings, which were inadmissible for our SSH key management.
 
 These shortcomings are:
  - It is not possible to have an identical user (a identical ssh key comment and fingerprint)
-   in multiple local accounts (authorized_key files) on the same host. 
+   in multiple local accounts (authorized_key files) on the same host.  
    A possible workarounds for this is available in the section below.
 
- - The unique identifier for a SSH key is the comment, not the fingerprint.
-   This means that keys are treated equal if the comment matches. 
+ - The unique identifier for a SSH key is the comment, not the fingerprint.  
+   This means that keys are treated equal if the comment matches.  
    The implementation of this module uses the SSH key fingerprint as resource identifier
    and an unique comment is only optionally enforced.
 
- - The user and target attributes do not accept arrays.
-   So it is not possible to have the same SSH key (comment and fingerprint) in multiple files.
+ - The user and target attributes do not accept arrays.  
+   So it is not possible to have the same SSH key (comment and fingerprint) in multiple files.  
    This is releated to issue (1).
 
 This module should fix the issues mentioned in Puppet Bug #1531 (http://projects.puppetlabs.com/issues/1531).
@@ -83,7 +83,7 @@ fingerprint is used as resource identifier and the user / target attributes
 support arrays.
 
 There is also an uniquecomment attribute that specifies if the key comment
-should be unique too.
+should be unique too.  
 This allows you to change the key for one user, without setting the fingerprint
 to absent first.
 
