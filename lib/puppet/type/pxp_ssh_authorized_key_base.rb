@@ -17,18 +17,31 @@ module Puppet
 
     ensurable
 
-    newparam(:name) do
-      desc "The SSH key fingerprint. This attribute is currently used as a
-      system-wide primary key and therefore has to be unique."
-
-      isnamevar
-
-      validate do |value|
-        raise Puppet::Error, "Key fingerprint must not contain whitespace: #{value}" if value =~ /\s/
-      end
+    def eval_generate
+       users = @original_parameters[:user]
+       return [] unless users.is_a? Array
+       provider.skip
+ 
+       res = []
+       
+       users.each do |user|
+          options = @original_parameters.reject { |param, value| value.nil? }
+          
+          options[:name] = @title + " (" + user + ")"
+          options[:user] = user
+          options[:target] = File.expand_path("~#{user}/.ssh/authorized_keys")
+          res << self.class.new(options)
+       end
+       res
     end
 
-    newproperty(:type) do
+    newparam(:name) do
+      desc "The puppet visible string for this resource, does not get stored in the authorized_key file"
+
+      isnamevar
+   end
+
+    newparam(:type) do
       desc "The encryption type used: ssh-dss or ssh-rsa."
 
       newvalues :'ssh-dss', :'ssh-rsa', :'ecdsa-sha2-nistp256', :'ecdsa-sha2-nistp384', :'ecdsa-sha2-nistp521'
@@ -37,16 +50,28 @@ module Puppet
       aliasvalue(:rsa, :'ssh-rsa')
     end
 
+    newparam(:fingerprint) do
+      desc "The SSH key fingerprint"
+
+      validate do |value|
+        raise Puppet::Error, "Key fingerprint must not contain whitespace: #{value}" if value =~ /\s/
+      end
+    end
+
     newparam(:comment) do
       desc "The SSH key comment"
     end
 
-    newproperty(:user, :array_matching => :all) do
+    newproperty(:user) do
       desc "The user account in which the SSH key should be installed.
       The resource will automatically depend on this user."
+
+      def insync?(is)
+        provider.exists?
+      end
     end
 
-    newproperty(:target, :array_matching => :all) do
+    newproperty(:target) do
       desc "The absolute filename in which to store the SSH key. This
       property is optional and should only be used in cases where keys
       are stored in a non-standard location (i.e.` not in
@@ -56,25 +81,13 @@ module Puppet
 
       def should
         return super if defined?(@should) and @should[0] != :absent
-        return nil unless users = resource[:user]
+        return nil unless user = resource[:user]
 
-        users = [users] unless users.is_a? Array
-        #targets = Array.new(users.length)
-        targets = Array.new
-        users.each do |user|
-#          puts "(type) user is " + user + "\n"
-          begin
-            targets << File.expand_path("~#{user}/.ssh/authorized_keys")
-          rescue
-            Puppet.debug "The required user #{user} is not yet present on the system"
-            return nil
-          end
-        end
-        return targets
+        File.expand_path("~#{user}/.ssh/authorized_keys")
       end
 
       def insync?(is)
-        is == should
+        true
       end
     end
 
@@ -90,6 +103,11 @@ A possible use case for this is the change of the key for a user. The old one do
       #munge do |value|
       #  @resource.munge_boolean(value)
       #end
+
+      def insync?(is)
+        true
+      end
+
     end
 
 

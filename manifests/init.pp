@@ -3,31 +3,38 @@
 # Copyright (C) 2012 Wunderman PXP GmbH
 # Lukas Hetzenecker <lukas.hetzenecker@wunderman.com>
 
-define pxp_ssh_authorized_key (
+define ssh (
+  $key_fingerprint,
   $key_comment,
   $key_type = 'ssh-rsa',
   $key_options = [],
-  $accounts = ['root'],
-  $ensure = 'present',
+  $present_accounts = ['root'],
+  $absent_accounts = []
 ){
 
-#  user { 
-#    $accounts: 
-#      ensure => present,
-#      managehome => true;
-#  }
-
-#  pxp_ssh_authorized_key::create_ssh_file {
-#    $accounts:
-#  }
+  #ssh::create_ssh_file {
+  #  $accounts:
+  #}
 
   pxp_ssh_authorized_key_base {
     $name:
-      ensure  => $ensure,
-      comment => $key_comment,
-      type    => $key_type,
-      user    => $accounts,
-      options => $key_options,
+      ensure      => "present",
+      fingerprint => $key_fingerprint,
+      comment     => $key_comment,
+      type        => $key_type,
+      user        => $present_accounts,
+      options     => $key_options,
+      uniquecomment => true;
+  }
+
+  pxp_ssh_authorized_key_base {
+    "$name absent":
+      ensure      => absent,
+      fingerprint => $key_fingerprint,
+      comment     => $key_comment,
+      type        => $key_type,
+      user        => $absent_accounts,
+      options     => $key_options,
       uniquecomment => true;
   }
 

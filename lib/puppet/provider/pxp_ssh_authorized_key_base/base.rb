@@ -27,49 +27,45 @@ Puppet::Type.type(:pxp_ssh_authorized_key_base).provide :base, :parent => Puppet
   end
 
   def initvars
-    @changed_targets = Set.new
+    @changed = false
+    @skip = false
 
-    @target_records = {}
+    @target_records = []
     @resource_hash = {}
   end
 
   def create
-    #puts "!!!! CREATE: RESOURCE IS NOW: " + resource[:comment] + ": " + resource[:ensure].to_s
-    update_files
+    return if skip?
+    update_file
   end
 
   def destroy
-    #puts "!!!! DESTROY: RESOURCE IS NOW: " + resource[:comment] + ": " + resource[:ensure].to_s
-    update_files
+    return if skip?
+    update_file
   end
 
   def exists?
-    #puts "!!!! EXISTS: RESOURCE IS NOW: " + resource[:comment] + ": " + resource[:ensure].to_s
+    return (resource[:ensure] == :present) if skip?
 
-    parse_targets
-
-    @changed_targets.empty? == (resource[:ensure] == :present)
+    parse
+    @changed != (resource[:ensure] == :present)
   end
 
-  def update_files
-    @changed_targets.each do |f|
-      update_file(f)
-    end
+  def skip
+    @skip = true
   end
 
-  def parse_targets
+  def skip?
+    @skip
+  end
+
+  def parse
     @resource_hash = resource.to_hash
     @resource_hash[:record_type] = :parsed
 
-    targets = resource[:target]
-    targets = [targets] unless targets.is_a? Array
+    target = resource[:target]
+    return unless target.is_a? String
 
-    targets.each do |target|
-      parse_target(target)
-    end
-  end
-
-  def parse_target(target)
     parser = Parser.new(resource)
     parser.class.initvars
 
@@ -78,47 +74,57 @@ Puppet::Type.type(:pxp_ssh_authorized_key_base).provide :base, :parent => Puppet
     found = false
  
     records.each do |record|
+      record[:target] = resource[:target]
       unless match_record?(record):
+        @target_records << record
         next
       end
 
       if resource[:ensure] == :present
         if found
-          @changed_targets << target
+          @changed = true
           record[:ensure] = :absent
 
         elsif parser.class.to_line(record) != parser.class.to_line(@resource_hash)
-          @changed_targets << target
+          #puts "CHANGED: record: " + parser.class.to_line(record)
+          #puts "CHANGED: resour: " + parser.class.to_line(@resource_hash)
 
-          record[:name]    = resource[:name] unless (record[:name] == resource[:name])
-          record[:comment] = resource[:comment] unless (record[:comment] == resource[:comment])
-          record[:options] = resource[:options] unless (record[:options] == resource[:options])
-          record[:ensure]  = resource[:ensure] unless (record[:ensure] == resource[:ensure])
+          @changed = true
+
+          @property_hash[:type] = record[:type] = resource[:type]
+          @property_hash[:fingerprint] = record[:fingerprint] = resource[:fingerprint]
+          @property_hash[:comment] = record[:comment] = resource[:comment]
+          @property_hash[:options] = record[:options] = resource[:options]
+          @property_hash[:ensure] = record[:ensure] = resource[:ensure]
         end
 
       elsif resource[:ensure] == :absent
-        @changed_targets << target
-        record[:ensure] = :absent
+        #puts "CHANGED: line shouldn't be here"
+        @changed = true
+        @property_hash[:ensure] = record[:ensure] = :absent
       end
- 
+
+      @target_records << record
       found = true
     end
 
     if resource[:ensure] == :present and !found
-       @changed_targets << target
-       records << @resource_hash
+       #puts "CHANGED: key not found"
+       @changed = true
+       @target_records << @resource_hash
     end
 
-    @target_records[target] = records
     parser.class.clear
   end  
 
   def match_record?(record)
-    record[:name] == resource[:name] or (resource[:uniquecomment] == :true and record[:comment] == resource[:comment])
+    record[:fingerprint] == resource[:fingerprint] or (resource[:uniquecomment] == :true and record[:comment] == resource[:comment])
   end
 
-  def update_file(target)
-    records = @target_records[target].reject { |r|
+  def update_file
+    target = resource[:target]
+
+    records = @target_records.reject { |r|
       r[:ensure] == :absent
     }
 

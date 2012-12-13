@@ -16,7 +16,7 @@ class Parser < Puppet::Provider::ParsedFile
    text_line :blank, :match => /^\s*$/
     
    record_line :parsed,
-     :fields   => %w{options type name comment},
+     :fields   => %w{options type fingerprint comment},
      :optional => %w{options},
      :rts => /^\s+/,
      :match    => /^(?:(.+) )?(ssh-dss|ssh-rsa|ecdsa-sha2-nistp256|ecdsa-sha2-nistp384|ecdsa-sha2-nistp521) ([^ ]+) ?(.*)$/,
@@ -31,7 +31,7 @@ class Parser < Puppet::Provider::ParsedFile
     }
 
    record_line :key_v1,
-     :fields   => %w{options bits exponent modulus name},
+     :fields   => %w{options bits exponent modulus fingerprint},
      :optional => %w{options},
      :rts      => /^\s+/,
      :match    => /^(?:(.+) )?(\d+) (\d+) (\d+)(?: (.+))?$/
